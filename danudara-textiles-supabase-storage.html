@@ -1,0 +1,1644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danudara Textiles - Premium Textile Store</title>
+    
+    <!-- External Libraries -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Outfit', sans-serif;
+            overflow-x: hidden;
+        }
+        
+        :root {
+            --primary: #00bfff;
+            --secondary: #1a1a2e;
+            --accent: #0099cc;
+            --light: #f8f9fa;
+            --text: #2c3e50;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
+
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, var(--secondary) 0%, #0d0d1a 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            animation: fadeOut 0.5s ease 2.5s forwards;
+        }
+
+        .logo-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(0, 191, 255, 0.1);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-top: 30px;
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            padding: 12px 32px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 191, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(0, 191, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 12px 32px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: #252540;
+            transform: translateY(-2px);
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 50px rgba(0, 191, 255, 0.15);
+        }
+
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ff4757;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            animation: pulse 2s infinite;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(0, 191, 255, 0.1);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            z-index: 10001;
+            animation: fadeInUp 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .notification.success {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+
+        .notification.info {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: fadeInUp 0.3s ease;
+        }
+
+        .upload-zone {
+            border: 2px dashed var(--primary);
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(0, 191, 255, 0.05);
+        }
+
+        .upload-zone:hover {
+            background: rgba(0, 191, 255, 0.1);
+            border-color: var(--accent);
+        }
+
+        .upload-zone.dragover {
+            background: rgba(0, 191, 255, 0.15);
+            border-color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, createContext, useContext } = React;
+
+        // ==========================================
+        // CONFIGURATION - UPDATE THESE VALUES
+        // ==================================
+
+  
+        const SUPABASE_URL = 'https://ctjowqtodlbqnylxfyqu.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN0am93cXRvZGxicW55bHhmeXF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk3NTkzMTgsImV4cCI6MjA4NTMzNTMxOH0.mnpFXToXr2cEw2FA0AD2MdDLqT4Vc1JhUsTmR5nNrxY'; // Get from Supabase dashboard
+
+        // ==========================================
+        // INITIALIZE SUPABASE
+        // ==========================================
+        
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // ==========================================
+        // STORAGE HELPER FUNCTIONS
+        // ==========================================
+        
+        const uploadImageToSupabase = async (file) => {
+            try {
+                // Create unique filename
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+                const filePath = `products/${fileName}`;
+
+                // Upload file to Supabase Storage
+                const { data, error } = await supabase.storage
+                    .from('product-images')
+                    .upload(filePath, file, {
+                        cacheControl: '3600',
+                        upsert: false
+                    });
+
+                if (error) throw error;
+
+                // Get public URL
+                const { data: { publicUrl } } = supabase.storage
+                    .from('product-images')
+                    .getPublicUrl(filePath);
+
+                return publicUrl;
+            } catch (error) {
+                console.error('Error uploading image:', error);
+                throw error;
+            }
+        };
+
+        // ==========================================
+        // GLOBAL CONTEXT
+        // ==========================================
+        
+        const AppContext = createContext();
+        const useApp = () => useContext(AppContext);
+
+        const AppProvider = ({ children }) => {
+            const [loading, setLoading] = useState(true);
+            const [user, setUser] = useState(null);
+            const [cart, setCart] = useState([]);
+            const [products, setProducts] = useState([]);
+            const [categories, setCategories] = useState([]);
+            const [notification, setNotification] = useState(null);
+
+            useEffect(() => {
+                setTimeout(() => setLoading(false), 3000);
+                
+                const savedCart = localStorage.getItem('cart');
+                if (savedCart) setCart(JSON.parse(savedCart));
+
+                checkUser();
+                loadProducts();
+                loadCategories();
+            }, []);
+
+            useEffect(() => {
+                localStorage.setItem('cart', JSON.stringify(cart));
+            }, [cart]);
+
+            const checkUser = async () => {
+                const { data: { user } } = await supabase.auth.getUser();
+                setUser(user);
+            };
+
+            const showNotification = (message, type = 'success') => {
+                setNotification({ message, type });
+                setTimeout(() => setNotification(null), 3000);
+            };
+
+            const loadProducts = async () => {
+                try {
+                    const { data, error } = await supabase
+                        .from('products')
+                        .select(`
+                            *,
+                            categories (
+                                name
+                            )
+                        `)
+                        .order('created_at', { ascending: false });
+                    
+                    if (!error && data) {
+                        const productsWithCategory = data.map(p => ({
+                            ...p,
+                            category_name: p.categories?.name || 'Uncategorized'
+                        }));
+                        setProducts(productsWithCategory);
+                    }
+                } catch (error) {
+                    console.error('Error loading products:', error);
+                }
+            };
+
+            const loadCategories = async () => {
+                try {
+                    const { data, error } = await supabase
+                        .from('categories')
+                        .select('*')
+                        .order('name');
+                    
+                    if (!error && data) setCategories(data);
+                } catch (error) {
+                    console.error('Error loading categories:', error);
+                }
+            };
+
+            const addToCart = (product, quantity = 1) => {
+                const existingItem = cart.find(item => item.id === product.id);
+                
+                if (existingItem) {
+                    setCart(cart.map(item =>
+                        item.id === product.id
+                            ? { ...item, quantity: item.quantity + quantity }
+                            : item
+                    ));
+                } else {
+                    setCart([...cart, { ...product, quantity }]);
+                }
+                
+                showNotification('Product added to cart!', 'success');
+            };
+
+            const removeFromCart = (productId) => {
+                setCart(cart.filter(item => item.id !== productId));
+                showNotification('Product removed from cart', 'info');
+            };
+
+            const updateQuantity = (productId, quantity) => {
+                if (quantity <= 0) {
+                    removeFromCart(productId);
+                    return;
+                }
+                
+                setCart(cart.map(item =>
+                    item.id === productId ? { ...item, quantity } : item
+                ));
+            };
+
+            const clearCart = () => setCart([]);
+            
+            const getCartTotal = () => {
+                return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+            };
+
+            const getCartCount = () => {
+                return cart.reduce((count, item) => count + item.quantity, 0);
+            };
+
+            return (
+                <AppContext.Provider value={{
+                    user, setUser,
+                    cart, addToCart, removeFromCart, updateQuantity, clearCart, getCartTotal, getCartCount,
+                    products, setProducts, loadProducts,
+                    categories, setCategories, loadCategories,
+                    notification, showNotification
+                }}>
+                    {loading ? <LoadingScreen /> : children}
+                </AppContext.Provider>
+            );
+        };
+
+        // ==========================================
+        // LOADING SCREEN
+        // ==========================================
+        
+        const LoadingScreen = () => (
+            <div className="loading-screen">
+                <div className="logo-animation" style={{textAlign: 'center'}}>
+                    <div style={{width: '120px', height: '120px', margin: '0 auto', background: 'linear-gradient(135deg, var(--primary), var(--accent))', borderRadius: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                        <span style={{color: 'white', fontWeight: '800', fontSize: '48px'}}>DT</span>
+                    </div>
+                </div>
+                <div className="spinner"></div>
+                <h2 style={{color: 'var(--primary)', marginTop: '20px', fontSize: '24px', fontWeight: '700'}}>
+                    DANUDARA TEXTILES
+                </h2>
+                <p style={{color: 'rgba(255,255,255,0.6)', marginTop: '8px'}}>Loading your premium experience...</p>
+            </div>
+        );
+
+        // ==========================================
+        // NOTIFICATION
+        // ==========================================
+        
+        const Notification = () => {
+            const { notification } = useApp();
+            return notification ? (
+                <div className={`notification ${notification.type}`}>
+                    {notification.message}
+                </div>
+            ) : null;
+        };
+
+        // ==========================================
+        // ADMIN MODAL WITH SUPABASE STORAGE
+        // ==========================================
+        
+        const AdminModal = ({ type, item, onClose, onSuccess }) => {
+            const { categories, showNotification } = useApp();
+            const [loading, setLoading] = useState(false);
+            const [uploading, setUploading] = useState(false);
+            const [imageFile, setImageFile] = useState(null);
+            const [imagePreview, setImagePreview] = useState(item?.image_url || '');
+            const [formData, setFormData] = useState(
+                item || {
+                    name: '',
+                    description: '',
+                    price: '',
+                    stock: '',
+                    category_id: '',
+                    image_url: ''
+                }
+            );
+            
+            const handleChange = (e) => {
+                setFormData({
+                    ...formData,
+                    [e.target.name]: e.target.value
+                });
+            };
+            
+            const handleImageChange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    // Validate file size (max 5MB)
+                    if (file.size > 5 * 1024 * 1024) {
+                        showNotification('Image size must be less than 5MB', 'error');
+                        return;
+                    }
+                    
+                    // Validate file type
+                    if (!file.type.startsWith('image/')) {
+                        showNotification('Please select an image file', 'error');
+                        return;
+                    }
+                    
+                    setImageFile(file);
+                    
+                    // Preview
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        setImagePreview(reader.result);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+            
+            const handleDrop = (e) => {
+                e.preventDefault();
+                const file = e.dataTransfer.files[0];
+                if (file) {
+                    const fakeEvent = { target: { files: [file] } };
+                    handleImageChange(fakeEvent);
+                }
+            };
+            
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                setLoading(true);
+                
+                try {
+                    let imageUrl = formData.image_url;
+                    
+                    // Upload new image if selected
+                    if (imageFile) {
+                        setUploading(true);
+                        imageUrl = await uploadImageToSupabase(imageFile);
+                        setUploading(false);
+                    }
+                    
+                    if (type === 'add-product' || type === 'edit-product') {
+                        const productData = {
+                            name: formData.name,
+                            description: formData.description,
+                            price: parseFloat(formData.price),
+                            stock: parseInt(formData.stock),
+                            category_id: formData.category_id || null,
+                            image_url: imageUrl
+                        };
+                        
+                        if (type === 'edit-product') {
+                            const { error } = await supabase
+                                .from('products')
+                                .update(productData)
+                                .eq('id', item.id);
+                            
+                            if (error) throw error;
+                            showNotification('Product updated successfully', 'success');
+                        } else {
+                            const { error } = await supabase
+                                .from('products')
+                                .insert([productData]);
+                            
+                            if (error) throw error;
+                            showNotification('Product added successfully', 'success');
+                        }
+                    } else if (type === 'add-category' || type === 'edit-category') {
+                        const categoryData = {
+                            name: formData.name,
+                            description: formData.description
+                        };
+                        
+                        if (type === 'edit-category') {
+                            const { error } = await supabase
+                                .from('categories')
+                                .update(categoryData)
+                                .eq('id', item.id);
+                            
+                            if (error) throw error;
+                            showNotification('Category updated successfully', 'success');
+                        } else {
+                            const { error } = await supabase
+                                .from('categories')
+                                .insert([categoryData]);
+                            
+                            if (error) throw error;
+                            showNotification('Category added successfully', 'success');
+                        }
+                    }
+                    
+                    onSuccess();
+                } catch (error) {
+                    console.error('Error:', error);
+                    showNotification(error.message, 'error');
+                } finally {
+                    setLoading(false);
+                    setUploading(false);
+                }
+            };
+            
+            return (
+                <div className="modal-overlay" onClick={onClose}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <div style={{ padding: '32px' }}>
+                            <h2 style={{ fontSize: '28px', fontWeight: '800', color: 'var(--secondary)', marginBottom: '24px' }}>
+                                {type.includes('add') ? 'Add New' : 'Edit'} {type.includes('product') ? 'Product' : 'Category'}
+                            </h2>
+                            
+                            <form onSubmit={handleSubmit}>
+                                {(type === 'add-product' || type === 'edit-product') && (
+                                    <>
+                                        <div style={{ marginBottom: '20px' }}>
+                                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: 'var(--secondary)' }}>
+                                                Product Image *
+                                            </label>
+                                            
+                                            <div 
+                                                className="upload-zone"
+                                                onClick={() => document.getElementById('imageInput').click()}
+                                                onDrop={handleDrop}
+                                                onDragOver={(e) => e.preventDefault()}
+                                                onDragEnter={(e) => e.currentTarget.classList.add('dragover')}
+                                                onDragLeave={(e) => e.currentTarget.classList.remove('dragover')}
+                                            >
+                                                {uploading ? (
+                                                    <div>
+                                                        <div className="spinner" style={{ margin: '0 auto 16px' }}></div>
+                                                        <p>Uploading image...</p>
+                                                    </div>
+                                                ) : imagePreview ? (
+                                                    <div>
+                                                        <img src={imagePreview} alt="Preview" style={{ maxWidth: '100%', maxHeight: '300px', borderRadius: '12px', marginBottom: '12px' }} />
+                                                        <p style={{ fontSize: '14px', color: 'var(--primary)' }}>Click to change image</p>
+                                                    </div>
+                                                ) : (
+                                                    <div>
+                                                        <div style={{ fontSize: '48px', marginBottom: '12px' }}>📸</div>
+                                                        <p style={{ fontSize: '16px', fontWeight: '600', marginBottom: '8px' }}>Click or drag image here</p>
+                                                        <p style={{ fontSize: '14px', color: 'var(--text)', opacity: 0.7 }}>PNG, JPG, GIF up to 5MB</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            
+                                            <input
+                                                id="imageInput"
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleImageChange}
+                                                style={{ display: 'none' }}
+                                            />
+                                        </div>
+                                    </>
+                                )}
+                                
+                                <div style={{ marginBottom: '20px' }}>
+                                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: 'var(--secondary)' }}>
+                                        Name *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        value={formData.name}
+                                        onChange={handleChange}
+                                        required
+                                        placeholder={type.includes('product') ? 'Product name' : 'Category name'}
+                                    />
+                                </div>
+                                
+                                <div style={{ marginBottom: '20px' }}>
+                                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: 'var(--secondary)' }}>
+                                        Description
+                                    </label>
+                                    <textarea
+                                        name="description"
+                                        value={formData.description}
+                                        onChange={handleChange}
+                                        placeholder="Enter description..."
+                                        rows="4"
+                                    />
+                                </div>
+                                
+                                {(type === 'add-product' || type === 'edit-product') && (
+                                    <>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
+                                            <div>
+                                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: 'var(--secondary)' }}>
+                                                    Price (LKR) *
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    name="price"
+                                                    value={formData.price}
+                                                    onChange={handleChange}
+                                                    required
+                                                    min="0"
+                                                    step="0.01"
+                                                    placeholder="0.00"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: 'var(--secondary)' }}>
+                                                    Stock *
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    name="stock"
+                                                    value={formData.stock}
+                                                    onChange={handleChange}
+                                                    required
+                                                    min="0"
+                                                    placeholder="0"
+                                                />
+                                            </div>
+                                        </div>
+                                        
+                                        <div style={{ marginBottom: '24px' }}>
+                                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: 'var(--secondary)' }}>
+                                                Category
+                                            </label>
+                                            <select
+                                                name="category_id"
+                                                value={formData.category_id}
+                                                onChange={handleChange}
+                                            >
+                                                <option value="">Select category (optional)</option>
+                                                {categories.map(cat => (
+                                                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </>
+                                )}
+                                
+                                <div style={{ display: 'flex', gap: '12px', marginTop: '32px' }}>
+                                    <button
+                                        type="submit"
+                                        className="btn-primary"
+                                        disabled={loading || uploading}
+                                        style={{ flex: 1, opacity: (loading || uploading) ? 0.7 : 1 }}
+                                    >
+                                        {uploading ? 'Uploading...' : loading ? 'Saving...' : (type.includes('add') ? 'Add' : 'Update')}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={onClose}
+                                        className="btn-secondary"
+                                        style={{ flex: 1 }}
+                                        disabled={loading || uploading}
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // ==========================================
+        // MAIN APP (Using all previous components)
+        // ==========================================
+        
+        const App = () => {
+            const [currentPage, setCurrentPage] = useState('home');
+            
+            return (
+                <>
+                    <Navigation currentPage={currentPage} setCurrentPage={setCurrentPage} />
+                    <Notification />
+                    
+                    {currentPage === 'home' && <HomePage setCurrentPage={setCurrentPage} />}
+                    {currentPage === 'shop' && <ShopPage />}
+                    {currentPage === 'cart' && <CartPage setCurrentPage={setCurrentPage} />}
+                    {currentPage === 'checkout' && <CheckoutPage setCurrentPage={setCurrentPage} />}
+                    {currentPage === 'login' && <LoginPage setCurrentPage={setCurrentPage} />}
+                    {currentPage === 'admin' && <AdminPanel setCurrentPage={setCurrentPage} />}
+                    
+                    <Footer />
+                </>
+            );
+        };
+
+        // All other components remain the same as before (Navigation, HomePage, ShopPage, etc.)
+        // I'll include the essential ones here for completeness:
+
+        const Navigation = ({ currentPage, setCurrentPage }) => {
+            const { user, setUser, getCartCount } = useApp();
+            const [showMenu, setShowMenu] = useState(false);
+            
+            const handleLogout = async () => {
+                await supabase.auth.signOut();
+                setUser(null);
+                setCurrentPage('home');
+            };
+            
+            return (
+                <nav style={{background: 'white', boxShadow: '0 2px 20px rgba(0,0,0,0.08)', position: 'sticky', top: 0, zIndex: 100}}>
+                    <div style={{maxWidth: '1400px', margin: '0 auto', padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px'}}>
+                        <div style={{display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer'}} onClick={() => setCurrentPage('home')}>
+                            <div style={{width: '50px', height: '50px', background: 'linear-gradient(135deg, var(--primary), var(--accent))', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                                <span style={{color: 'white', fontWeight: '800', fontSize: '20px'}}>DT</span>
+                            </div>
+                            <div>
+                                <h1 style={{fontSize: '20px', fontWeight: '800', color: 'var(--secondary)'}}>DANUDARA</h1>
+                                <p style={{fontSize: '12px', color: 'var(--primary)', fontWeight: '600', letterSpacing: '2px'}}>TEXTILES</p>
+                            </div>
+                        </div>
+                        
+                        <div style={{display: 'flex', gap: '32px', alignItems: 'center', flexWrap: 'wrap'}}>
+                            <button onClick={() => setCurrentPage('home')} style={{background: 'none', border: 'none', color: currentPage === 'home' ? 'var(--primary)' : 'var(--text)', fontWeight: '600', cursor: 'pointer', fontSize: '16px'}}>Home</button>
+                            <button onClick={() => setCurrentPage('shop')} style={{background: 'none', border: 'none', color: currentPage === 'shop' ? 'var(--primary)' : 'var(--text)', fontWeight: '600', cursor: 'pointer', fontSize: '16px'}}>Shop</button>
+                            
+                            <button onClick={() => setCurrentPage('cart')} style={{background: 'none', border: 'none', cursor: 'pointer', position: 'relative'}}>
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <circle cx="9" cy="21" r="1"/>
+                                    <circle cx="20" cy="21" r="1"/>
+                                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                                </svg>
+                                {getCartCount() > 0 && <span className="cart-badge">{getCartCount()}</span>}
+                            </button>
+                            
+                            {user ? (
+                                <div style={{position: 'relative'}}>
+                                    <button onClick={() => setShowMenu(!showMenu)} style={{background: 'var(--primary)', color: 'white', border: 'none', width: '40px', height: '40px', borderRadius: '50%', fontWeight: '700', cursor: 'pointer', fontSize: '16px'}}>
+                                        {user.email?.[0].toUpperCase()}
+                                    </button>
+                                    {showMenu && (
+                                        <div style={{position: 'absolute', top: '50px', right: 0, background: 'white', borderRadius: '12px', boxShadow: '0 10px 40px rgba(0,0,0,0.15)', padding: '8px', minWidth: '180px', zIndex: 1000}}>
+                                            {user.user_metadata?.role === 'admin' && (
+                                                <button onClick={() => { setCurrentPage('admin'); setShowMenu(false); }} style={{width: '100%', padding: '12px', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', borderRadius: '8px', fontWeight: '600', color: 'var(--text)'}}>
+                                                    Admin Panel
+                                                </button>
+                                            )}
+                                            <button onClick={handleLogout} style={{width: '100%', padding: '12px', background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer', borderRadius: '8px', fontWeight: '600', color: '#e74c3c'}}>
+                                                Logout
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <button onClick={() => setCurrentPage('login')} className="btn-primary">
+                                    Login
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </nav>
+            );
+        };
+
+        // Include HomePage component here (same as before)
+        const HomePage = ({ setCurrentPage }) => {
+            const { products } = useApp();
+            
+            return (
+                <div className="fade-in">
+                    <section style={{background: 'linear-gradient(135deg, var(--secondary) 0%, #0d0d1a 100%)', minHeight: '80vh', display: 'flex', alignItems: 'center', position: 'relative', overflow: 'hidden'}}>
+                        <div style={{position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.05, backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 35px, var(--primary) 35px, var(--primary) 70px)'}}></div>
+                        <div style={{maxWidth: '1400px', margin: '0 auto', padding: '60px 24px', position: 'relative', zIndex: 1}}>
+                            <div style={{maxWidth: '700px'}}>
+                                <h1 style={{fontSize: 'clamp(36px, 8vw, 72px)', fontWeight: '800', color: 'white', lineHeight: '1.1', marginBottom: '24px', fontFamily: "'Playfair Display', serif"}}>
+                                    Premium Textiles
+                                    <span style={{display: 'block', color: 'var(--primary)'}}>Delivered to You</span>
+                                </h1>
+                                <p style={{fontSize: 'clamp(16px, 3vw, 20px)', color: 'rgba(255,255,255,0.8)', marginBottom: '40px', lineHeight: '1.6'}}>
+                                    Discover our exclusive collection of premium fabrics and textiles. Quality craftsmanship meets modern design.
+                                </p>
+                                <div style={{display: 'flex', gap: '16px', flexWrap: 'wrap'}}>
+                                    <button onClick={() => setCurrentPage('shop')} className="btn-primary" style={{fontSize: '18px', padding: '16px 48px'}}>
+                                        Shop Now
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    
+                    <section style={{padding: '80px 24px', background: 'var(--light)'}}>
+                        <div style={{maxWidth: '1400px', margin: '0 auto'}}>
+                            <div style={{textAlign: 'center', marginBottom: '60px'}}>
+                                <h2 style={{fontSize: 'clamp(32px, 6vw, 48px)', fontWeight: '800', color: 'var(--secondary)', marginBottom: '16px'}}>Featured Products</h2>
+                                <p style={{fontSize: '18px', color: 'var(--text)', opacity: 0.7}}>Handpicked selection of our finest textiles</p>
+                            </div>
+                            
+                            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '32px'}}>
+                                {products.slice(0, 6).map((product, index) => (
+                                    <ProductCard key={product.id} product={product} index={index} />
+                                ))}
+                            </div>
+                            
+                            {products.length === 0 && (
+                                <div style={{textAlign: 'center', padding: '60px 20px'}}>
+                                    <div style={{fontSize: '64px', marginBottom: '16px'}}>🛍️</div>
+                                    <h3 style={{fontSize: '24px', fontWeight: '700', color: 'var(--secondary)', marginBottom: '8px'}}>No Products Yet</h3>
+                                    <p style={{color: 'var(--text)', opacity: 0.7}}>Products will appear here once added by admin</p>
+                                </div>
+                            )}
+                            
+                            {products.length > 0 && (
+                                <div style={{textAlign: 'center', marginTop: '48px'}}>
+                                    <button onClick={() => setCurrentPage('shop')} className="btn-primary" style={{fontSize: '16px'}}>
+                                        View All Products
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </section>
+                </div>
+            );
+        };
+
+        const ProductCard = ({ product, index }) => {
+            const { addToCart } = useApp();
+            const [imageError, setImageError] = useState(false);
+            
+            return (
+                <div className="product-card" style={{animationDelay: `${index * 0.1}s`}}>
+                    <div style={{position: 'relative', paddingTop: '100%', background: '#f5f5f5', overflow: 'hidden'}}>
+                        {!imageError && product.image_url ? (
+                            <img 
+                                src={product.image_url} 
+                                alt={product.name}
+                                onError={() => setImageError(true)}
+                                style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover'}}
+                            />
+                        ) : (
+                            <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #f5f5f5, #e0e0e0)', fontSize: '48px'}}>
+                                📦
+                            </div>
+                        )}
+                        {product.stock <= 5 && product.stock > 0 && (
+                            <div style={{position: 'absolute', top: '16px', right: '16px', background: '#ff4757', color: 'white', padding: '6px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '700'}}>
+                                Only {product.stock} left
+                            </div>
+                        )}
+                        {product.stock === 0 && (
+                            <div style={{position: 'absolute', top: '16px', right: '16px', background: '#95a5a6', color: 'white', padding: '6px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '700'}}>
+                                Out of Stock
+                            </div>
+                        )}
+                    </div>
+                    <div style={{padding: '24px'}}>
+                        <div style={{fontSize: '12px', color: 'var(--primary)', fontWeight: '600', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px'}}>
+                            {product.category_name || 'Uncategorized'}
+                        </div>
+                        <h3 style={{fontSize: '18px', fontWeight: '700', color: 'var(--secondary)', marginBottom: '8px', minHeight: '48px'}}>
+                            {product.name}
+                        </h3>
+                        <p style={{fontSize: '14px', color: 'var(--text)', opacity: 0.7, marginBottom: '16px', minHeight: '40px'}}>
+                            {product.description?.substring(0, 80)}{product.description?.length > 80 ? '...' : ''}
+                        </p>
+                        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', flexWrap: 'wrap'}}>
+                            <span style={{fontSize: '24px', fontWeight: '800', color: 'var(--primary)'}}>
+                                LKR {product.price?.toLocaleString()}
+                            </span>
+                            <button 
+                                onClick={() => addToCart(product)}
+                                disabled={product.stock === 0}
+                                className="btn-primary"
+                                style={{padding: '10px 24px', fontSize: '14px', opacity: product.stock === 0 ? 0.5 : 1, cursor: product.stock === 0 ? 'not-allowed' : 'pointer'}}
+                            >
+                                Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // Include remaining pages (ShopPage, CartPage, CheckoutPage, LoginPage, AdminPanel, Footer)
+        // Due to length, reusing the exact same code from the previous version
+        // The key changes are only in the AdminModal component for Supabase Storage
+
+        const ShopPage = () => {
+            const { products, categories } = useApp();
+            const [selectedCategory, setSelectedCategory] = useState('all');
+            const [searchTerm, setSearchTerm] = useState('');
+            const [sortBy, setSortBy] = useState('newest');
+            
+            const filteredProducts = products
+                .filter(p => selectedCategory === 'all' || p.category_id === selectedCategory)
+                .filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                            p.description?.toLowerCase().includes(searchTerm.toLowerCase()))
+                .sort((a, b) => {
+                    if (sortBy === 'price-low') return a.price - b.price;
+                    if (sortBy === 'price-high') return b.price - a.price;
+                    if (sortBy === 'name') return a.name.localeCompare(b.name);
+                    return new Date(b.created_at) - new Date(a.created_at);
+                });
+            
+            return (
+                <div className="fade-in" style={{minHeight: '100vh', background: 'var(--light)', padding: '40px 24px'}}>
+                    <div style={{maxWidth: '1400px', margin: '0 auto'}}>
+                        <h1 style={{fontSize: 'clamp(32px, 6vw, 48px)', fontWeight: '800', color: 'var(--secondary)', marginBottom: '40px', textAlign: 'center'}}>
+                            Our Collection
+                        </h1>
+                        
+                        <div style={{background: 'white', padding: '24px', borderRadius: '20px', marginBottom: '40px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)'}}>
+                            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px', marginBottom: '24px'}}>
+                                <input
+                                    type="text"
+                                    placeholder="Search products..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    style={{padding: '14px 20px'}}
+                                />
+                                
+                                <select 
+                                    value={selectedCategory} 
+                                    onChange={(e) => setSelectedCategory(e.target.value)}
+                                    style={{padding: '14px 20px'}}
+                                >
+                                    <option value="all">All Categories</option>
+                                    {categories.map(cat => (
+                                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                    ))}
+                                </select>
+                                
+                                <select 
+                                    value={sortBy} 
+                                    onChange={(e) => setSortBy(e.target.value)}
+                                    style={{padding: '14px 20px'}}
+                                >
+                                    <option value="newest">Newest First</option>
+                                    <option value="price-low">Price: Low to High</option>
+                                    <option value="price-high">Price: High to Low</option>
+                                    <option value="name">Name: A to Z</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '32px'}}>
+                            {filteredProducts.map((product, index) => (
+                                <ProductCard key={product.id} product={product} index={index} />
+                            ))}
+                        </div>
+                        
+                        {filteredProducts.length === 0 && (
+                            <div style={{textAlign: 'center', padding: '80px 20px', background: 'white', borderRadius: '20px'}}>
+                                <div style={{fontSize: '64px', marginBottom: '16px'}}>🔍</div>
+                                <h3 style={{fontSize: '24px', fontWeight: '700', color: 'var(--secondary)', marginBottom: '8px'}}>No Products Found</h3>
+                                <p style={{color: 'var(--text)', opacity: 0.7}}>Try adjusting your filters or search terms</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        // Due to character limit, I'll include the essential remaining components
+        // Cart, Checkout, Login, Admin, and Footer remain the same
+
+        const CartPage = ({ setCurrentPage }) => {
+            const { cart, removeFromCart, updateQuantity, getCartTotal, clearCart, user } = useApp();
+            
+            if (cart.length === 0) {
+                return (
+                    <div className="fade-in" style={{minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--light)'}}>
+                        <div style={{textAlign: 'center', padding: '60px 20px'}}>
+                            <div style={{fontSize: '96px', marginBottom: '24px'}}>🛒</div>
+                            <h2 style={{fontSize: '32px', fontWeight: '800', color: 'var(--secondary)', marginBottom: '16px'}}>Your cart is empty</h2>
+                            <p style={{fontSize: '18px', color: 'var(--text)', opacity: 0.7, marginBottom: '32px'}}>Add some products to get started!</p>
+                            <button onClick={() => setCurrentPage('shop')} className="btn-primary" style={{fontSize: '18px', padding: '16px 48px'}}>
+                                Continue Shopping
+                            </button>
+                        </div>
+                    </div>
+                );
+            }
+            
+            return (
+                <div className="fade-in" style={{minHeight: '100vh', background: 'var(--light)', padding: '40px 24px'}}>
+                    <div style={{maxWidth: '1200px', margin: '0 auto'}}>
+                        <h1 style={{fontSize: 'clamp(32px, 6vw, 48px)', fontWeight: '800', color: 'var(--secondary)', marginBottom: '40px'}}>Shopping Cart</h1>
+                        
+                        <div style={{display: 'grid', gridTemplateColumns: '1fr', gap: '32px'}}>
+                            <div>
+                                {cart.map((item, index) => (
+                                    <div key={item.id} className="product-card" style={{marginBottom: '16px', animationDelay: `${index * 0.1}s`}}>
+                                        <div style={{display: 'flex', gap: '24px', padding: '24px', flexWrap: 'wrap'}}>
+                                            <div style={{width: '120px', height: '120px', borderRadius: '12px', background: '#f5f5f5', flexShrink: 0, overflow: 'hidden'}}>
+                                                {item.image_url ? (
+                                                    <img src={item.image_url} alt={item.name} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+                                                ) : (
+                                                    <div style={{width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48px'}}>📦</div>
+                                                )}
+                                            </div>
+                                            <div style={{flex: 1, minWidth: '200px'}}>
+                                                <h3 style={{fontSize: '20px', fontWeight: '700', color: 'var(--secondary)', marginBottom: '8px'}}>{item.name}</h3>
+                                                <p style={{fontSize: '14px', color: 'var(--text)', opacity: 0.7, marginBottom: '16px'}}>{item.category_name}</p>
+                                                <div style={{display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap'}}>
+                                                    <span style={{fontSize: '24px', fontWeight: '800', color: 'var(--primary)'}}>
+                                                        LKR {(item.price * item.quantity).toLocaleString()}
+                                                    </span>
+                                                    <div style={{display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--light)', padding: '8px 16px', borderRadius: '25px'}}>
+                                                        <button 
+                                                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                                            style={{background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--primary)', fontWeight: '700'}}
+                                                        >
+                                                            −
+                                                        </button>
+                                                        <span style={{fontWeight: '700', fontSize: '16px', minWidth: '30px', textAlign: 'center'}}>{item.quantity}</span>
+                                                        <button 
+                                                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                                            disabled={item.quantity >= item.stock}
+                                                            style={{background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: 'var(--primary)', fontWeight: '700', opacity: item.quantity >= item.stock ? 0.5 : 1}}
+                                                        >
+                                                            +
+                                                        </button>
+                                                    </div>
+                                                    <button 
+                                                        onClick={() => removeFromCart(item.id)}
+                                                        style={{background: 'none', border: 'none', color: '#e74c3c', cursor: 'pointer', fontWeight: '600'}}
+                                                    >
+                                                        Remove
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                                
+                                <div className="product-card" style={{padding: '32px', marginTop: '24px'}}>
+                                    <h3 style={{fontSize: '24px', fontWeight: '800', color: 'var(--secondary)', marginBottom: '24px'}}>Order Summary</h3>
+                                    
+                                    <div style={{borderTop: '2px solid var(--light)', paddingTop: '24px', marginBottom: '24px'}}>
+                                        <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '16px'}}>
+                                            <span style={{color: 'var(--text)', fontSize: '16px'}}>Subtotal</span>
+                                            <span style={{fontWeight: '700', fontSize: '16px'}}>LKR {getCartTotal().toLocaleString()}</span>
+                                        </div>
+                                        <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '16px'}}>
+                                            <span style={{color: 'var(--text)', fontSize: '16px'}}>Shipping</span>
+                                            <span style={{fontWeight: '700', fontSize: '16px', color: 'var(--primary)'}}>FREE</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style={{borderTop: '2px solid var(--light)', paddingTop: '24px', marginBottom: '24px'}}>
+                                        <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '24px'}}>
+                                            <span style={{fontSize: '20px', fontWeight: '700'}}>Total</span>
+                                            <span style={{fontSize: '28px', fontWeight: '800', color: 'var(--primary)'}}>LKR {getCartTotal().toLocaleString()}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    {user ? (
+                                        <button onClick={() => setCurrentPage('checkout')} className="btn-primary" style={{width: '100%', fontSize: '18px', padding: '16px'}}>
+                                            Proceed to Checkout
+                                        </button>
+                                    ) : (
+                                        <div>
+                                            <button onClick={() => setCurrentPage('login')} className="btn-primary" style={{width: '100%', fontSize: '18px', padding: '16px', marginBottom: '12px'}}>
+                                                Login to Checkout
+                                            </button>
+                                            <p style={{fontSize: '14px', textAlign: 'center', color: 'var(--text)', opacity: 0.7}}>
+                                                You need to be logged in to complete your purchase
+                                            </p>
+                                        </div>
+                                    )}
+                                    
+                                    <button onClick={() => setCurrentPage('shop')} style={{width: '100%', background: 'none', border: '2px solid var(--primary)', color: 'var(--primary)', padding: '12px', borderRadius: '25px', fontWeight: '600', cursor: 'pointer', marginTop: '12px'}}>
+                                        Continue Shopping
+                                    </button>
+                                    
+                                    <button 
+                                        onClick={clearCart}
+                                        style={{width: '100%', background: 'none', border: '2px solid #e74c3c', color: '#e74c3c', padding: '12px', borderRadius: '25px', fontWeight: '600', cursor: 'pointer', marginTop: '12px'}}
+                                    >
+                                        Clear Cart
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // Checkout, Login, AdminPanel, and Footer components remain identical
+        // Including them with minimal code for space...
+
+        const CheckoutPage = ({ setCurrentPage }) => {
+            const { cart, getCartTotal, clearCart, showNotification, user } = useApp();
+            const [loading, setLoading] = useState(false);
+            const [formData, setFormData] = useState({
+                fullName: '',
+                email: user?.email || '',
+                phone: '',
+                address: '',
+                city: '',
+                postalCode: '',
+                notes: ''
+            });
+            
+            const handleChange = (e) => {
+                setFormData({
+                    ...formData,
+                    [e.target.name]: e.target.value
+                });
+            };
+            
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                setLoading(true);
+                
+                try {
+                    const { data: order, error } = await supabase
+                        .from('orders')
+                        .insert([
+                            {
+                                user_id: user.id,
+                                customer_name: formData.fullName,
+                                customer_email: formData.email,
+                                customer_phone: formData.phone,
+                                shipping_address: `${formData.address}, ${formData.city}, ${formData.postalCode}`,
+                                notes: formData.notes,
+                                total_amount: getCartTotal(),
+                                status: 'pending',
+                                items: cart.map(item => ({
+                                    product_id: item.id,
+                                    name: item.name,
+                                    price: item.price,
+                                    quantity: item.quantity
+                                }))
+                            }
+                        ])
+                        .select()
+                        .single();
+                    
+                    if (error) throw error;
+                    
+                    showNotification('Order placed successfully!', 'success');
+                    
+                    setTimeout(() => {
+                        clearCart();
+                        setCurrentPage('home');
+                    }, 2000);
+                    
+                } catch (error) {
+                    console.error('Error creating order:', error);
+                    showNotification('Failed to create order. Please try again.', 'error');
+                } finally {
+                    setLoading(false);
+                }
+            };
+            
+            if (cart.length === 0) {
+                setCurrentPage('cart');
+                return null;
+            }
+            
+            return (
+                <div className="fade-in" style={{minHeight: '100vh', background: 'var(--light)', padding: '40px 24px'}}>
+                    <div style={{maxWidth: '800px', margin: '0 auto'}}>
+                        <h1 style={{fontSize: 'clamp(32px, 6vw, 48px)', fontWeight: '800', color: 'var(--secondary)', marginBottom: '40px'}}>Checkout</h1>
+                        
+                        <div className="product-card" style={{padding: '40px'}}>
+                            <h2 style={{fontSize: '24px', fontWeight: '700', color: 'var(--secondary)', marginBottom: '32px'}}>Shipping Information</h2>
+                            
+                            <form onSubmit={handleSubmit}>
+                                <div style={{marginBottom: '24px'}}>
+                                    <label style={{display: 'block', marginBottom: '8px', fontWeight: '600', color: 'var(--secondary)'}}>Full Name *</label>
+                                    <input type="text" name="fullName" value={formData.fullName} onChange={handleChange} required placeholder="John Doe" />
+                                </div>
+                                
+                                <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px'}}>
+                                    <div>
+                                        <label style={{display: 'block', marginBottom: '8px', fontWeight: '600', color: 'var(--secondary)'}}>Email *</label>
+                                        <input type="email" name="email" value={formData.email} onChange={handleChange} required placeholder="john@example.com" />
+                                    </div>
+                                    <div>
+                                        <label style={{display: 'block', marginBottom: '8px', fontWeight: '600', color: 'var(--secondary)'}}>Phone *</label>
+                                        <input type="tel" name="phone" value={formData.phone} onChange={handleChange} required placeholder="+94 77 123 4567" />
+                                    </div>
+                                </div>
+                                
+                                <div style={{marginBottom: '24px'}}>
+                                    <label style={{display: 'block', marginBottom: '8px', fontWeight: '600', color: 'var(--secondary)'}}>Address *</label>
+                                    <textarea name="address" value={formData.address} onChange={handleChange} required placeholder="123 Main Street" rows="3" />
+                                </div>
+                                
+                                <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px'}}>
+                                    <div>
+                                        <label style={{display: 'block', marginBottom: '8px', fontWeight: '600', color: 'var(--secondary)'}}>City *</label>
+                                        <input type="text" name="city" value={formData.city} onChange={handleChange} required placeholder="Colombo" />
+                                    </div>
+                                    <div>
+                                        <label style={{display: 'block', marginBottom: '8px', fontWeight: '600', color: 'var(--secondary)'}}>Postal Code *</label>
+                                        <input type="text" name="postalCode" value={formData.postalCode} onChange={handleChange} required placeholder="00100" />
+                                    </div>
+                                </div>
+                                
+                                <div style={{marginBottom: '32px'}}>
+                                    <label style={{display: 'block', marginBottom: '8px', fontWeight: '600', color: 'var(--secondary)'}}>Order Notes (Optional)</label>
+                                    <textarea name="notes" value={formData.notes} onChange={handleChange} placeholder="Any special instructions..." rows="3" />
+                                </div>
+                                
+                                <div style={{background: 'var(--light)', padding: '20px', borderRadius: '12px', marginBottom: '24px'}}>
+                                    <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '12px'}}>
+                                        <span style={{fontWeight: '600'}}>Total Amount:</span>
+                                        <span style={{fontSize: '24px', fontWeight: '800', color: 'var(--primary)'}}>LKR {getCartTotal().toLocaleString()}</span>
+                                    </div>
+                                </div>
+                                
+                                <button type="submit" className="btn-primary" disabled={loading} style={{width: '100%', fontSize: '18px', padding: '16px', opacity: loading ? 0.7 : 1, cursor: loading ? 'wait' : 'pointer'}}>
+                                    {loading ? 'Processing...' : 'Place Order'}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const LoginPage = ({ setCurrentPage }) => {
+            const { setUser, showNotification } = useApp();
+            const [isLogin, setIsLogin] = useState(true);
+            const [loading, setLoading] = useState(false);
+            const [formData, setFormData] = useState({ email: '', password: '', confirmPassword: '' });
+            
+            const handleChange = (e) => {
+                setFormData({ ...formData, [e.target.name]: e.target.value });
+            };
+            
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                setLoading(true);
+                
+                try {
+                    if (isLogin) {
+                        const { data, error } = await supabase.auth.signInWithPassword({
+                            email: formData.email,
+                            password: formData.password
+                        });
+                        
+                        if (error) throw error;
+                        
+                        
+                        setUser(data.user);
+                        showNotification('Welcome back!', 'success');
+                        setCurrentPage('home');
+                    } else {
+                        if (formData.password !== formData.confirmPassword) {
+                            throw new Error('Passwords do not match');
+                        }
+                        
+                        const { data, error } = await supabase.auth.signUp({
+                            email: formData.email,
+                            password: formData.password
+                        });
+                        
+                        if (error) throw error;
+                        
+                        showNotification('Account created! Please check your email for verification.', 'success');
+                        setIsLogin(true);
+                    }
+                } catch (error) {
+                    showNotification(error.message, 'error');
+                } finally {
+                    setLoading(false);
+                }
+            };
+            
+            return (
+                <div className="fade-in" style={{minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, var(--secondary) 0%, #0d0d1a 100%)', padding: '40px 24px'}}>
+                    <div className="product-card" style={{maxWidth: '500px', width: '100%', padding: '48px'}}>
+                        <div style={{textAlign: 'center', marginBottom: '32px'}}>
+                            <div style={{width: '80px', height: '80px', background: 'linear-gradient(135deg, var(--primary), var(--accent))', borderRadius: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px'}}>
+                                <span style={{color: 'white', fontWeight: '800', fontSize: '32px'}}>DT</span>
+                            </div>
+                            <h2 style={{fontSize: '32px', fontWeight: '800', color: 'var(--secondary)', marginBottom: '8px'}}>
+                                {isLogin ? 'Welcome Back' : 'Create Account'}
+                            </h2>
+                            <p style={{color: 'var(--text)', opacity: 0.7}}>
+                                {isLogin ? 'Sign in to continue shopping' : 'Join Danudara Textiles today'}
+                            </p>
+                        </div>
+                        
+                        <form onSubmit={handleSubmit}>
+                            <div style={{marginBottom: '20px'}}>
+                                <label style={{display: 'block', marginBottom: '8px', fontWeight: '600', color: 'var(--secondary)'}}>Email</label>
+                                <input type="email" name="email" value={formData.email} onChange={handleChange} required placeholder="your@email.com" />
+                            </div>
+                            
+                            <div style={{marginBottom: '20px'}}>
+                                <label style={{display: 'block', marginBottom: '8px', fontWeight: '600', color: 'var(--secondary)'}}>Password</label>
+                                <input type="password" name="password" value={formData.password} onChange={handleChange} required placeholder="••••••••" />
+                            </div>
+                            
+                            {!isLogin && (
+                                <div style={{marginBottom: '20px'}}>
+                                    <label style={{display: 'block', marginBottom: '8px', fontWeight: '600', color: 'var(--secondary)'}}>Confirm Password</label>
+                                    <input type="password" name="confirmPassword" value={formData.confirmPassword} onChange={handleChange} required placeholder="••••••••" />
+                                </div>
+                            )}
+                            
+                            <button type="submit" className="btn-primary" disabled={loading} style={{width: '100%', fontSize: '16px', padding: '14px', marginBottom: '16px', opacity: loading ? 0.7 : 1}}>
+                                {loading ? 'Please wait...' : (isLogin ? 'Sign In' : 'Create Account')}
+                            </button>
+                        </form>
+                        
+                        <div style={{textAlign: 'center'}}>
+                            <button onClick={() => setIsLogin(!isLogin)} style={{background: 'none', border: 'none', color: 'var(--primary)', fontWeight: '600', cursor: 'pointer', fontSize: '14px'}}>
+                                {isLogin ? "Don't have an account? Sign Up" : 'Already have an account? Sign In'}
+                            </button>
+                        </div>
+                        
+                        <div style={{marginTop: '24px', textAlign: 'center'}}>
+                            <button onClick={() => setCurrentPage('home')} style={{background: 'none', border: 'none', color: 'var(--text)', opacity: 0.7, cursor: 'pointer', fontSize: '14px'}}>
+                                ← Back to Home
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const AdminPanel = ({ setCurrentPage }) => {
+            const { user, products, categories, loadProducts, loadCategories, showNotification } = useApp();
+            const [activeTab, setActiveTab] = useState('products');
+            const [showModal, setShowModal] = useState(false);
+            const [modalType, setModalType] = useState('');
+            const [editingItem, setEditingItem] = useState(null);
+            
+            if (user?.user_metadata?.role !== 'admin') {
+                setCurrentPage('home');
+                return null;
+            }
+            
+            const openModal = (type, item = null) => {
+                setModalType(type);
+                setEditingItem(item);
+                setShowModal(true);
+            };
+            
+            const handleDelete = async (type, id) => {
+                if (!confirm(`Are you sure you want to delete this ${type}?`)) return;
+                
+                try {
+                    const { error } = await supabase
+                        .from(type === 'product' ? 'products' : 'categories')
+                        .delete()
+                        .eq('id', id);
+                    
+                    if (error) throw error;
+                    
+                    showNotification(`${type.charAt(0).toUpperCase() + type.slice(1)} deleted successfully`, 'success');
+                    type === 'product' ? loadProducts() : loadCategories();
+                } catch (error) {
+                    showNotification(`Failed to delete ${type}`, 'error');
+                }
+            };
+            
+            return (
+                <div className="fade-in" style={{minHeight: '100vh', background: 'var(--light)', padding: '40px 24px'}}>
+                    <div style={{maxWidth: '1400px', margin: '0 auto'}}>
+                        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px', flexWrap: 'wrap', gap: '16px'}}>
+                            <h1 style={{fontSize: 'clamp(32px, 6vw, 48px)', fontWeight: '800', color: 'var(--secondary)'}}>Admin Panel</h1>
+                            <button onClick={() => setCurrentPage('home')} className="btn-secondary">
+                                Back to Store
+                            </button>
+                        </div>
+                        
+                        <div style={{background: 'white', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.08)'}}>
+                            <div style={{display: 'flex', borderBottom: '2px solid var(--light)', flexWrap: 'wrap'}}>
+                                <button onClick={() => setActiveTab('products')} style={{flex: 1, minWidth: '150px', padding: '20px', background: activeTab === 'products' ? 'var(--primary)' : 'transparent', color: activeTab === 'products' ? 'white' : 'var(--text)', border: 'none', fontWeight: '700', fontSize: '16px', cursor: 'pointer'}}>
+                                    Products ({products.length})
+                                </button>
+                                <button onClick={() => setActiveTab('categories')} style={{flex: 1, minWidth: '150px', padding: '20px', background: activeTab === 'categories' ? 'var(--primary)' : 'transparent', color: activeTab === 'categories' ? 'white' : 'var(--text)', border: 'none', fontWeight: '700', fontSize: '16px', cursor: 'pointer'}}>
+                                    Categories ({categories.length})
+                                </button>
+                            </div>
+                            
+                            <div style={{padding: '32px'}}>
+                                {activeTab === 'products' && (
+                                    <div>
+                                        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px'}}>
+                                            <h3 style={{fontSize: '24px', fontWeight: '700', color: 'var(--secondary)'}}>Manage Products</h3>
+                                            <button onClick={() => openModal('add-product')} className="btn-primary">
+                                                + Add Product
+                                            </button>
+                                        </div>
+                                        
+                                        <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px'}}>
+                                            {products.map(product => (
+                                                <div key={product.id} className="product-card">
+                                                    <div style={{position: 'relative', paddingTop: '75%', background: '#f5f5f5', overflow: 'hidden'}}>
+                                                        {product.image_url ? (
+                                                            <img src={product.image_url} alt={product.name} style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover'}} />
+                                                        ) : (
+                                                            <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48px'}}>📦</div>
+                                                        )}
+                                                    </div>
+                                                    <div style={{padding: '20px'}}>
+                                                        <div style={{fontSize: '12px', color: 'var(--primary)', fontWeight: '600', marginBottom: '8px'}}>{product.category_name || 'Uncategorized'}</div>
+                                                        <h4 style={{fontSize: '16px', fontWeight: '700', marginBottom: '8px'}}>{product.name}</h4>
+                                                        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
+                                                            <span style={{fontSize: '18px', fontWeight: '800', color: 'var(--primary)'}}>LKR {product.price.toLocaleString()}</span>
+                                                            <span style={{fontSize: '14px', fontWeight: '600', padding: '4px 12px', borderRadius: '12px', background: product.stock <= 5 ? '#ffe5e5' : '#e5f5e5', color: product.stock <= 5 ? '#ff4757' : '#2ecc71'}}>
+                                                                Stock: {product.stock}
+                                                            </span>
+                                                        </div>
+                                                        <div style={{display: 'flex', gap: '8px'}}>
+                                                            <button onClick={() => openModal('edit-product', product)} style={{flex: 1, padding: '10px', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600'}}>
+                                                                Edit
+                                                            </button>
+                                                            <button onClick={() => handleDelete('product', product.id)} style={{flex: 1, padding: '10px', background: '#e74c3c', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600'}}>
+                                                                Delete
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        
+                                        {products.length === 0 && (
+                                            <div style={{textAlign: 'center', padding: '60px 20px'}}>
+                                                <div style={{fontSize: '64px', marginBottom: '16px'}}>📦</div>
+                                                <h3 style={{fontSize: '20px', fontWeight: '700', color: 'var(--secondary)', marginBottom: '8px'}}>No products yet</h3>
+                                                <p style={{color: 'var(--text)', opacity: 0.7, marginBottom: '24px'}}>Add your first product to get started</p>
+                                                <button onClick={() => openModal('add-product')} className="btn-primary">
+                                                    + Add Product
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                                
+                                {activeTab === 'categories' && (
+                                    <div>
+                                        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px'}}>
+                                            <h3 style={{fontSize: '24px', fontWeight: '700', color: 'var(--secondary)'}}>Manage Categories</h3>
+                                            <button onClick={() => openModal('add-category')} className="btn-primary">
+                                                + Add Category
+                                            </button>
+                                        </div>
+                                        
+                                        <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px'}}>
+                                            {categories.map(category => (
+                                                <div key={category.id} className="product-card" style={{padding: '24px'}}>
+                                                    <h4 style={{fontSize: '20px', fontWeight: '700', color: 'var(--secondary)', marginBottom: '8px'}}>{category.name}</h4>
+                                                    <p style={{fontSize: '14px', color: 'var(--text)', opacity: 0.7, marginBottom: '16px', minHeight: '40px'}}>
+                                                        {category.description || 'No description'}
+                                                    </p>
+                                                    <div style={{fontSize: '14px', color: 'var(--primary)', fontWeight: '600', marginBottom: '16px'}}>
+                                                        {products.filter(p => p.category_id === category.id).length} products
+                                                    </div>
+                                                    <div style={{display: 'flex', gap: '8px'}}>
+                                                        <button onClick={() => openModal('edit-category', category)} style={{flex: 1, padding: '10px', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600'}}>
+                                                            Edit
+                                                        </button>
+                                                        <button onClick={() => handleDelete('category', category.id)} style={{flex: 1, padding: '10px', background: '#e74c3c', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600'}}>
+                                                            Delete
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        
+                                        {categories.length === 0 && (
+                                            <div style={{textAlign: 'center', padding: '60px 20px'}}>
+                                                <div style={{fontSize: '64px', marginBottom: '16px'}}>📁</div>
+                                                <h3 style={{fontSize: '20px', fontWeight: '700', color: 'var(--secondary)', marginBottom: '8px'}}>No categories yet</h3>
+                                                <p style={{color: 'var(--text)', opacity: 0.7, marginBottom: '24px'}}>Create categories to organize your products</p>
+                                                <button onClick={() => openModal('add-category')} className="btn-primary">
+                                                    + Add Category
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {showModal && (
+                        <AdminModal 
+                            type={modalType}
+                            item={editingItem}
+                            onClose={() => {
+                                setShowModal(false);
+                                setEditingItem(null);
+                            }}
+                            onSuccess={() => {
+                                loadProducts();
+                                loadCategories();
+                                setShowModal(false);
+                                setEditingItem(null);
+                            }}
+                        />
+                    )}
+                </div>
+            );
+        };
+
+        const Footer = () => (
+            <footer style={{background: 'var(--secondary)', color: 'white', padding: '60px 24px 30px', marginTop: '80px'}}>
+                <div style={{maxWidth: '1400px', margin: '0 auto'}}>
+                    <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '40px', marginBottom: '40px'}}>
+                        <div>
+                            <div style={{display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px'}}>
+                                <div style={{width: '50px', height: '50px', background: 'linear-gradient(135deg, var(--primary), var(--accent))', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                                    <span style={{color: 'white', fontWeight: '800', fontSize: '20px'}}>DT</span>
+                                </div>
+                                <div>
+                                    <h3 style={{fontSize: '18px', fontWeight: '800'}}>DANUDARA</h3>
+                                    <p style={{fontSize: '12px', color: 'var(--primary)', fontWeight: '600', letterSpacing: '2px'}}>TEXTILES</p>
+                                </div>
+                            </div>
+                            <p style={{color: 'rgba(255,255,255,0.7)', fontSize: '14px', lineHeight: '1.6'}}>
+                                Premium quality textiles delivered to your doorstep. Quality craftsmanship meets modern design.
+                            </p>
+                        </div>
+                        
+                        <div>
+                            <h4 style={{fontSize: '16px', fontWeight: '700', marginBottom: '16px'}}>Contact Info</h4>
+                            <div style={{display: 'flex', flexDirection: 'column', gap: '8px', color: 'rgba(255,255,255,0.7)', fontSize: '14px'}}>
+                                <p>📍 Negombo, Sri Lanka</p>
+                                <p>📞 +94 XX XXX XXXX</p>
+                                <p>✉️ info@danudaratextiles.com</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style={{borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '24px', textAlign: 'center', color: 'rgba(255,255,255,0.5)', fontSize: '14px'}}>
+                        <p>© 2026 Danudara Textiles. All rights reserved.</p>
+                    </div>
+                </div>
+            </footer>
+        );
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(
+            <AppProvider>
+                <App />
+            </AppProvider>
+        );
+    </script>
+</body>
+</html>
