@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Danudara Textiles</title>
+    <link rel="stylesheet" href="admin-styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Work+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Admin Header -->
+    <header class="admin-header">
+        <div class="header-content">
+            <div class="logo">
+                <img src="logo.png" alt="Danudara Textiles">
+                <span>Admin Panel</span>
+            </div>
+            <div class="header-actions">
+                <button onclick="window.open('index.html', '_blank')" class="view-site-btn">View Site</button>
+                <button onclick="logout()" class="logout-btn">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Admin Sidebar -->
+    <aside class="admin-sidebar">
+        <nav class="admin-nav">
+            <a href="#dashboard" class="nav-item active" onclick="showSection('dashboard')">
+                <span class="icon">📊</span> Dashboard
+            </a>
+            <a href="#products" class="nav-item" onclick="showSection('products')">
+                <span class="icon">📦</span> Products
+            </a>
+            <a href="#categories" class="nav-item" onclick="showSection('categories')">
+                <span class="icon">📂</span> Categories
+            </a>
+            <a href="#payment-methods" class="nav-item" onclick="showSection('payment-methods')">
+                <span class="icon">💳</span> Payment Methods
+            </a>
+            <a href="#delivery" class="nav-item" onclick="showSection('delivery')">
+                <span class="icon">🚚</span> Delivery Charges
+            </a>
+            <a href="#notices" class="nav-item" onclick="showSection('notices')">
+                <span class="icon">📢</span> Notices
+            </a>
+            <a href="#settings" class="nav-item" onclick="showSection('settings')">
+                <span class="icon">⚙️</span> Settings
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+        <!-- Dashboard Section -->
+        <section id="dashboard-section" class="admin-section active">
+            <h1>Dashboard</h1>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📦</div>
+                    <div class="stat-info">
+                        <h3 id="total-products">0</h3>
+                        <p>Total Products</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📂</div>
+                    <div class="stat-info">
+                        <h3 id="total-categories">0</h3>
+                        <p>Categories</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💳</div>
+                    <div class="stat-info">
+                        <h3 id="total-payment-methods">0</h3>
+                        <p>Payment Methods</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📢</div>
+                    <div class="stat-info">
+                        <h3 id="active-notices">0</h3>
+                        <p>Active Notices</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-charts">
+                <div class="chart-card">
+                    <h3>Recent Activity</h3>
+                    <div class="activity-list" id="recent-activity">
+                        <!-- Activity items will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Products Section -->
+        <section id="products-section" class="admin-section">
+            <div class="section-header">
+                <h1>Products Management</h1>
+                <button onclick="openProductModal()" class="btn-primary">Add New Product</button>
+            </div>
+            
+            <div class="table-container">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>Price</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="products-table-body">
+                        <!-- Products will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Categories Section -->
+        <section id="categories-section" class="admin-section">
+            <div class="section-header">
+                <h1>Categories Management</h1>
+                <button onclick="openCategoryModal()" class="btn-primary">Add New Category</button>
+            </div>
+            
+            <div class="categories-grid" id="categories-grid">
+                <!-- Categories will be loaded here -->
+            </div>
+        </section>
+
+        <!-- Payment Methods Section -->
+        <section id="payment-methods-section" class="admin-section">
+            <div class="section-header">
+                <h1>Payment Methods</h1>
+                <button onclick="openPaymentMethodModal()" class="btn-primary">Add Payment Method</button>
+            </div>
+            
+            <div class="payment-methods-list" id="payment-methods-list">
+                <!-- Payment methods will be loaded here -->
+            </div>
+        </section>
+
+        <!-- Delivery Section -->
+        <section id="delivery-section" class="admin-section">
+            <div class="section-header">
+                <h1>Delivery Charges</h1>
+                <button onclick="saveAllDeliveryCharges()" class="btn-primary">Save All Changes</button>
+            </div>
+            
+            <div class="delivery-charges-grid" id="delivery-charges-grid">
+                <!-- Delivery charges will be loaded here -->
+            </div>
+        </section>
+
+        <!-- Notices Section -->
+        <section id="notices-section" class="admin-section">
+            <div class="section-header">
+                <h1>Notices Management</h1>
+                <button onclick="openNoticeModal()" class="btn-primary">Add New Notice</button>
+            </div>
+            
+            <div class="notices-list" id="notices-list">
+                <!-- Notices will be loaded here -->
+            </div>
+        </section>
+
+        <!-- Settings Section -->
+        <section id="settings-section" class="admin-section">
+            <h1>Settings</h1>
+            
+            <div class="settings-card">
+                <h3>Site Information</h3>
+                <form id="site-settings-form">
+                    <div class="form-group">
+                        <label>Site Name</label>
+                        <input type="text" name="site_name" value="Danudara Textiles">
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Email</label>
+                        <input type="email" name="contact_email" value="info@danudara.lk">
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Phone</label>
+                        <input type="tel" name="contact_phone" value="+94 XX XXX XXXX">
+                    </div>
+                    <div class="form-group">
+                        <label>Address</label>
+                        <textarea name="address" rows="3">Negombo, Sri Lanka</textarea>
+                    </div>
+                    <button type="submit" class="btn-primary">Save Settings</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <!-- Product Modal -->
+    <div id="product-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="product-modal-title">Add New Product</h2>
+                <button class="close-modal" onclick="closeModal('product-modal')">&times;</button>
+            </div>
+            <form id="product-form">
+                <input type="hidden" name="id" id="product-id">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Product Name (English)</label>
+                        <input type="text" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Product Name (Sinhala)</label>
+                        <input type="text" name="name_si">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Product Name (Tamil)</label>
+                        <input type="text" name="name_ta">
+                    </div>
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select name="category_id" id="product-category" required>
+                            <option value="">Select Category</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Description (English)</label>
+                    <textarea name="description" rows="3"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Description (Sinhala)</label>
+                    <textarea name="description_si" rows="3"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Description (Tamil)</label>
+                    <textarea name="description_ta" rows="3"></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Price (LKR)</label>
+                        <input type="number" name="price" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Image URL</label>
+                        <input type="url" name="image_url" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" name="is_new">
+                            Mark as New
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" name="active" checked>
+                            Active
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" onclick="closeModal('product-modal')" class="btn-secondary">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Category Modal -->
+    <div id="category-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="category-modal-title">Add New Category</h2>
+                <button class="close-modal" onclick="closeModal('category-modal')">&times;</button>
+            </div>
+            <form id="category-form">
+                <input type="hidden" name="id" id="category-id">
+                
+                <div class="form-group">
+                    <label>Category Name (English)</label>
+                    <input type="text" name="name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Category Name (Sinhala)</label>
+                    <input type="text" name="name_si">
+                </div>
+                
+                <div class="form-group">
+                    <label>Category Name (Tamil)</label>
+                    <input type="text" name="name_ta">
+                </div>
+                
+                <div class="form-group">
+                    <label>Image URL</label>
+                    <input type="url" name="image_url" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" name="active" checked>
+                        Active
+                    </label>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" onclick="closeModal('category-modal')" class="btn-secondary">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Category</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Payment Method Modal -->
+    <div id="payment-method-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Payment Method</h2>
+                <button class="close-modal" onclick="closeModal('payment-method-modal')">&times;</button>
+            </div>
+            <form id="payment-method-form">
+                <input type="hidden" name="id" id="payment-method-id">
+                
+                <div class="form-group">
+                    <label>Method Name (English)</label>
+                    <input type="text" name="name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Method Name (Sinhala)</label>
+                    <input type="text" name="name_si">
+                </div>
+                
+                <div class="form-group">
+                    <label>Method Name (Tamil)</label>
+                    <input type="text" name="name_ta">
+                </div>
+                
+                <div class="form-group">
+                    <label>Display Order</label>
+                    <input type="number" name="display_order" value="0">
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" name="active" checked>
+                        Active
+                    </label>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" onclick="closeModal('payment-method-modal')" class="btn-secondary">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Payment Method</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notice Modal -->
+    <div id="notice-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Notice</h2>
+                <button class="close-modal" onclick="closeModal('notice-modal')">&times;</button>
+            </div>
+            <form id="notice-form">
+                <input type="hidden" name="id" id="notice-id">
+                
+                <div class="form-group">
+                    <label>Notice Content (English)</label>
+                    <textarea name="content" rows="3" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Notice Content (Sinhala)</label>
+                    <textarea name="content_si" rows="3"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Notice Content (Tamil)</label>
+                    <textarea name="content_ta" rows="3"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" name="active" checked>
+                        Active
+                    </label>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" onclick="closeModal('notice-modal')" class="btn-secondary">Cancel</button>
+                    <button type="submit" class="btn-primary">Save Notice</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>
